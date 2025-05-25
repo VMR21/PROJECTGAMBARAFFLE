@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ✅ Allow CORS for all requests
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -35,7 +36,6 @@ function getCurrentRaffleWindow() {
   raffleEnd.setUTCHours(23, 59, 59, 0); // Friday 23:59:59
 
   const publicVisibleFrom = new Date(raffleStart);
-  publicVisibleFrom.setUTCDate(publicVisibleFrom.getUTCDate());
   publicVisibleFrom.setUTCHours(14, 0, 0, 0); // Saturday 14:00 UTC (same week)
 
   const publicVisibleUntil = new Date(publicVisibleFrom);
@@ -49,7 +49,7 @@ function getCurrentRaffleWindow() {
     endObj: raffleEnd,
     publicVisibleFrom,
     publicVisibleUntil,
-    published: false
+    published: false,
   };
 }
 
@@ -67,7 +67,7 @@ async function fetchAndCacheData() {
       pastRounds.push(publishedRound);
       latestPublished = publishedRound;
       currentWindow.published = true;
-      console.log([📢] Published raffle for ${currentWindow.start} → ${currentWindow.end});
+      console.log(`[📢] Published raffle for ${currentWindow.start} → ${currentWindow.end}`);
     }
 
     if (now >= currentWindow.publicVisibleUntil) {
@@ -76,10 +76,10 @@ async function fetchAndCacheData() {
       nextTicketNumber = 1;
       initialized = false;
       currentWindow = getCurrentRaffleWindow();
-      console.log([🔁] New raffle round started);
+      console.log(`[🔁] New raffle round started`);
     }
 
-    const API_URL = https://services.rainbet.com/v1/external/affiliates?start_at=${currentWindow.start}&end_at=${currentWindow.end}&key=${API_KEY};
+    const API_URL = `https://services.rainbet.com/v1/external/affiliates?start_at=${currentWindow.start}&end_at=${currentWindow.end}&key=${API_KEY}`;
     const response = await fetch(API_URL);
     const json = await response.json();
     if (!json.affiliates) throw new Error("No data");
@@ -131,7 +131,7 @@ async function fetchAndCacheData() {
       });
     }
 
-    console.log([✅] Raffle data updated);
+    console.log(`[✅] Raffle data updated`);
   } catch (err) {
     console.error("[❌] Error fetching data:", err.message);
   }
@@ -140,6 +140,7 @@ async function fetchAndCacheData() {
 fetchAndCacheData();
 setInterval(fetchAndCacheData, 5 * 60 * 1000);
 
+// Routes
 app.get("/raffle/tickets", (req, res) => {
   const now = new Date();
   if (now < currentWindow.publicVisibleFrom) {
@@ -170,5 +171,5 @@ app.get("/raffle/history", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(🚀 Raffle server running on port ${PORT});
+  console.log(`🚀 Raffle server running on port ${PORT}`);
 });
