@@ -1,10 +1,10 @@
 {
-  "name": "raffle-server",
+  "name": "projectgamba-raffle-api",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "raffle.mjs",
   "scripts": {
-    "start": "node index.js"
+    "start": "node raffle.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",
